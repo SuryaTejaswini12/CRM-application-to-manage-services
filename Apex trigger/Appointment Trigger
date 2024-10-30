@@ -1,0 +1,30 @@
+trigger ApplicationStatusUpdateTrigger on Application__c (after update) { 
+ 
+    // List to hold email notifications for applicants 
+    List<Messaging.SingleEmailMessage> emails = new 
+List<Messaging.SingleEmailMessage>(); 
+ 
+    for (Application__c app : Trigger.new) { 
+         
+        // Check if the status has changed by comparing the old and new values 
+        Application__c oldApp = Trigger.oldMap.get(app.Id); 
+        if (app.Status__c != oldApp.Status__c) { 
+             
+            // Prepare email notification for the applicant 
+            Messaging.SingleEmailMessage email = new 
+Messaging.SingleEmailMessage(); 
+            email.setToAddresses(new List<String>{app.Applicant_Email__c});  
+//Replace with applicant's email field 
+            email.setSubject('Update on Your Application Status: ' + app.Name); 
+            email.setPlainTextBody('Dear ' + app.Applicant_Name__c + ',\n\n' + 
+'Your application status has been updated to: ' + app.Status__c + '.\n\n' + 
+'Please contact us if you have any questions or need further assistance.\n\n' + 
+'Thank you,\nEduConsultPro Admissions Team'); 
+            emails.add(email); 
+        } 
+    } 
+    // Send the emails to applicants 
+    if (!emails.isEmpty()) { 
+        Messaging.sendEmail(emails); 
+    } 
+}
